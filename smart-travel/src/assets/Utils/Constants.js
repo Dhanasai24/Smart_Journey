@@ -1,44 +1,93 @@
-// ✅ PRESERVED: Your original API configuration with network IP support
-export const API_BASE_URL = "http://localhost:3000/api"
-export const SOCKET_URL = "http://localhost:3000"
-export const GOOGLE_AUTH_URL = "http://localhost:3000/auth/google"
+// ✅ ENVIRONMENT DETECTION
+const isProduction = window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1"
+const isDevelopment = !isProduction
+
+// ✅ PRODUCTION URLs (Your deployed services)
+const PRODUCTION_CONFIG = {
+  FRONTEND_URL: "https://ai-trip-planner24.netlify.app",
+  BACKEND_URL: "https://smart-travel-backend-7mzh.onrender.com",
+  API_BASE_URL: "https://smart-travel-backend-7mzh.onrender.com/api",
+  SOCKET_URL: "https://smart-travel-backend-7mzh.onrender.com",
+  GOOGLE_AUTH_URL: "https://smart-travel-backend-7mzh.onrender.com/auth/google",
+}
+
+// ✅ DEVELOPMENT URLs (Local development)
+const DEVELOPMENT_CONFIG = {
+  FRONTEND_URL: "http://localhost:5173",
+  BACKEND_URL: "http://localhost:3000",
+  API_BASE_URL: "http://localhost:3000/api",
+  SOCKET_URL: "http://localhost:3000",
+  GOOGLE_AUTH_URL: "http://localhost:3000/auth/google",
+}
+
+// ✅ CURRENT CONFIGURATION based on environment
+const CURRENT_CONFIG = isProduction ? PRODUCTION_CONFIG : DEVELOPMENT_CONFIG
+
+// ✅ EXPORTED CONSTANTS
+export const API_BASE_URL = CURRENT_CONFIG.API_BASE_URL
+export const SOCKET_URL = CURRENT_CONFIG.SOCKET_URL
+export const GOOGLE_AUTH_URL = CURRENT_CONFIG.GOOGLE_AUTH_URL
 
 // ✅ UPDATED: Stream Chat Configuration with your actual credentials
 export const STREAM_API_KEY = "69sdct4v7bn2"
 export const STREAM_BASE_URL = "https://chat.stream-io-api.com"
-// ✅ FIXED: Correct endpoint path
-export const STREAM_TOKEN_ENDPOINT = `${API_BASE_URL}/chat/stream-token`
+export const STREAM_TOKEN_ENDPOINT = `${CURRENT_CONFIG.API_BASE_URL}/chat/stream-token`
 
-// ✅ PRESERVED: Network IP support - automatically detect or use localhost
+// ✅ NETWORK SUPPORT FUNCTIONS (Updated for production)
 export const getNetworkApiUrl = () => {
+  if (isProduction) {
+    return PRODUCTION_CONFIG.API_BASE_URL
+  }
+
   const hostname = window.location.hostname
   if (hostname === "localhost" || hostname === "127.0.0.1") {
-    return "http://localhost:3000/api"
+    return DEVELOPMENT_CONFIG.API_BASE_URL
   } else {
-    // Use the same hostname as the frontend for API calls
+    // Use the same hostname as the frontend for API calls in local network
     return `http://${hostname}:3000/api`
   }
 }
 
 export const getNetworkSocketUrl = () => {
+  if (isProduction) {
+    return PRODUCTION_CONFIG.SOCKET_URL
+  }
+
   const hostname = window.location.hostname
   if (hostname === "localhost" || hostname === "127.0.0.1") {
-    return "http://localhost:3000"
+    return DEVELOPMENT_CONFIG.SOCKET_URL
   } else {
-    // Use the same hostname as the frontend for socket connection
+    // Use the same hostname as the frontend for socket connection in local network
     return `http://${hostname}:3000`
   }
 }
 
-// ✅ FIXED: Stream Token URL with network support
 export const getStreamTokenUrl = () => {
+  if (isProduction) {
+    return `${PRODUCTION_CONFIG.API_BASE_URL}/chat/stream-token`
+  }
+
   const hostname = window.location.hostname
   if (hostname === "localhost" || hostname === "127.0.0.1") {
-    return "http://localhost:3000/api/chat/stream-token"
+    return `${DEVELOPMENT_CONFIG.API_BASE_URL}/chat/stream-token`
   } else {
     return `http://${hostname}:3000/api/chat/stream-token`
   }
 }
+
+// ✅ ENVIRONMENT INFO (for debugging)
+export const ENV_INFO = {
+  isProduction,
+  isDevelopment,
+  hostname: window.location.hostname,
+  currentConfig: CURRENT_CONFIG,
+}
+
+// ✅ LOG CURRENT CONFIGURATION (for debugging)
+console.log("🌍 Environment:", isProduction ? "PRODUCTION" : "DEVELOPMENT")
+console.log("🔗 API Base URL:", API_BASE_URL)
+console.log("🔌 Socket URL:", SOCKET_URL)
+console.log("🔐 Google Auth URL:", GOOGLE_AUTH_URL)
 
 // ✅ PRESERVED: Your original app config
 export const APP_CONFIG = {
@@ -200,7 +249,7 @@ export const CHANNEL_TYPES = {
 
 // ✅ UPDATED: Stream Chat Configuration with your actual credentials
 export const STREAM_CHAT_API_KEY = "69sdct4v7bn2"
-export const STREAM_CHAT_TOKEN_ENDPOINT = `${API_BASE_URL}/chat/stream-token`
+export const STREAM_CHAT_TOKEN_ENDPOINT = `${CURRENT_CONFIG.API_BASE_URL}/chat/stream-token`
 
 // ✅ PRESERVED: Stream Chat event types
 export const STREAM_CHAT_EVENTS = {

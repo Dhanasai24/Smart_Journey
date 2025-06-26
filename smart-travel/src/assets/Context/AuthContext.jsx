@@ -19,6 +19,17 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"))
 
   useEffect(() => {
+    // ✅ ENHANCED: Check for stored user data first
+    const storedUser = localStorage.getItem("user")
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser))
+      } catch (error) {
+        console.warn("Could not parse stored user data:", error)
+        localStorage.removeItem("user")
+      }
+    }
+
     if (token) {
       fetchUserProfile()
     } else {
@@ -38,16 +49,20 @@ export const AuthProvider = ({ children }) => {
       if (response.ok) {
         const data = await response.json()
         setUser(data.user)
+        // ✅ ENHANCED: Store user data in localStorage
+        localStorage.setItem("user", JSON.stringify(data.user))
         console.log("User profile loaded:", data.user)
       } else {
         console.log("Failed to fetch profile, clearing auth data")
         localStorage.removeItem("token")
+        localStorage.removeItem("user") // ✅ Clear user data too
         setToken(null)
         setUser(null)
       }
     } catch (error) {
       console.error("Error fetching user profile:", error)
       localStorage.removeItem("token")
+      localStorage.removeItem("user") // ✅ Clear user data too
       setToken(null)
       setUser(null)
     } finally {
@@ -69,6 +84,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         localStorage.setItem("token", data.token)
+        localStorage.setItem("user", JSON.stringify(data.user)) // ✅ Store user data
         setToken(data.token)
         setUser(data.user)
         console.log("Login successful:", data.user)
@@ -95,6 +111,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         localStorage.setItem("token", data.token)
+        localStorage.setItem("user", JSON.stringify(data.user)) // ✅ Store user data
         setToken(data.token)
         setUser(data.user)
         console.log("Registration successful:", data.user)
@@ -119,6 +136,7 @@ export const AuthProvider = ({ children }) => {
       console.error("Logout error:", error)
     } finally {
       localStorage.removeItem("token")
+      localStorage.removeItem("user") // ✅ Clear user data too
       setToken(null)
       setUser(null)
       console.log("User logged out")
@@ -133,6 +151,14 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  // ✅ ENHANCED: Add setUser method for external use
+  const updateUser = (userData) => {
+    setUser(userData)
+    if (userData) {
+      localStorage.setItem("user", JSON.stringify(userData))
+    }
+  }
+
   const value = {
     user,
     token,
@@ -141,6 +167,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     setAuthData,
+    setUser: updateUser, // ✅ Expose setUser method
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
