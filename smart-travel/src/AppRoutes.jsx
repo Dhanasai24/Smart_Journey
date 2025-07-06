@@ -29,6 +29,18 @@ const AppRoutes = () => {
   console.log("👤 User authenticated:", user ? `${user.name} (${user.email})` : "No user")
   console.log("⏳ Auth loading:", loading)
 
+  // Show loading spinner while auth is being determined
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       {/* ADDED: Navbar component that shows on all pages */}
@@ -41,20 +53,15 @@ const AppRoutes = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/auth-success" element={<AuthSuccess />} />
         <Route path="/reviews" element={<ReviewsPage />} /> {/* NEW: Public reviews page */}
+        {/* Features that can be VIEWED by everyone */}
+        <Route path="/trip-planner" element={<App />} />
+        <Route path="/public-trips" element={<PublicTrips />} />
         {/* Protected Routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/trip-planner"
-          element={
-            <ProtectedRoute>
-              <App />
             </ProtectedRoute>
           }
         />
@@ -71,15 +78,6 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <SocialTravel />
-            </ProtectedRoute>
-          }
-        />
-        {/* NEW: Public Trips Route - INTEGRATED */}
-        <Route
-          path="/public-trips"
-          element={
-            <ProtectedRoute>
-              <PublicTrips />
             </ProtectedRoute>
           }
         />

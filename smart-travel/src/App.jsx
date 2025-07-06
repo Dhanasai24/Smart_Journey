@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { MapPin, Calendar, Plane, CheckCircle, Save } from "lucide-react"
+import { MapPin, Calendar, Plane, CheckCircle, Save, Lock } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "./assets/Context/AuthContext"
 import { API_BASE_URL } from "./assets/Utils/Constants"
@@ -41,6 +41,19 @@ export default function App() {
   const navigate = useNavigate()
 
   const nextStep = () => {
+    // Check if user needs to login for transport selection (step 2)
+    if (currentStep === 1 && !user) {
+      const shouldLogin = window.confirm(
+        "To find transport options, you need to sign in. Would you like to sign in now?",
+      )
+      if (shouldLogin) {
+        navigate("/login")
+        return
+      } else {
+        return // Don't proceed if user doesn't want to login
+      }
+    }
+
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1)
       window.scrollTo(0, 0)
@@ -184,13 +197,17 @@ export default function App() {
                     className="flex flex-col items-center"
                   >
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all relative ${
                         currentStep >= step.id
                           ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                           : "bg-gray-200 text-gray-400"
                       }`}
                     >
                       <step.icon className="w-6 h-6" />
+                      {/* Show lock icon for steps that need auth */}
+                      {step.id >= 2 && !user && (
+                        <Lock className="w-3 h-3 absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5" />
+                      )}
                     </div>
                     <span
                       className={`mt-2 text-xs font-medium ${currentStep >= step.id ? "text-gray-800" : "text-gray-400"}`}

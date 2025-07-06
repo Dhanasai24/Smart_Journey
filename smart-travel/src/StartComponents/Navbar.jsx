@@ -482,36 +482,26 @@ const Navbar = () => {
               </div>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - Reordered as requested */}
             <div className="hidden md:flex items-center space-x-8">
+              {/* 1. Plan Trip - Always visible */}
+              <Link
+                to="/trip-planner"
+                className={`${textStyles.primary} ${textStyles.hover} font-semibold transition-all duration-300 px-4 py-2 rounded-lg relative ${
+                  location.pathname === "/trip-planner"
+                    ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20 shadow-sm`
+                    : "hover:bg-white/5 dark:hover:bg-gray-800/10"
+                }`}
+              >
+                Plan Trip
+                {location.pathname === "/trip-planner" && (
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full"></div>
+                )}
+              </Link>
+
               {user ? (
                 <>
-                  <Link
-                    to="/dashboard"
-                    className={`${textStyles.primary} ${textStyles.hover} font-semibold transition-all duration-300 px-4 py-2 rounded-lg relative ${
-                      location.pathname === "/dashboard"
-                        ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20 shadow-sm`
-                        : "hover:bg-white/5 dark:hover:bg-gray-800/10"
-                    }`}
-                  >
-                    Dashboard
-                    {location.pathname === "/dashboard" && (
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full"></div>
-                    )}
-                  </Link>
-                  <Link
-                    to="/trip-planner"
-                    className={`${textStyles.primary} ${textStyles.hover} font-semibold transition-all duration-300 px-4 py-2 rounded-lg relative ${
-                      location.pathname === "/trip-planner"
-                        ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20 shadow-sm`
-                        : "hover:bg-white/5 dark:hover:bg-gray-800/10"
-                    }`}
-                  >
-                    Plan Trip
-                    {location.pathname === "/trip-planner" && (
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full"></div>
-                    )}
-                  </Link>
+                  {/* 2. My Trips - Only when logged in */}
                   <Link
                     to="/my-trips"
                     className={`${textStyles.primary} ${textStyles.hover} font-semibold transition-all duration-300 px-4 py-2 rounded-lg relative ${
@@ -525,22 +515,30 @@ const Navbar = () => {
                       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full"></div>
                     )}
                   </Link>
-                  <Link
-                    to="/public-trips"
-                    className={`${textStyles.primary} ${textStyles.hover} font-semibold transition-all duration-300 px-4 py-2 rounded-lg relative ${
-                      location.pathname === "/public-trips"
-                        ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20 shadow-sm`
-                        : "hover:bg-white/5 dark:hover:bg-gray-800/10"
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <Globe className="w-4 h-4" />
-                      <span>Public Trips</span>
-                    </div>
-                    {location.pathname === "/public-trips" && (
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full"></div>
-                    )}
-                  </Link>
+                </>
+              ) : null}
+
+              {/* 3. Public Trips - Always visible */}
+              <Link
+                to="/public-trips"
+                className={`${textStyles.primary} ${textStyles.hover} font-semibold transition-all duration-300 px-4 py-2 rounded-lg relative ${
+                  location.pathname === "/public-trips"
+                    ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20 shadow-sm`
+                    : "hover:bg-white/5 dark:hover:bg-gray-800/10"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Globe className="w-4 h-4" />
+                  <span>Public Trips</span>
+                </div>
+                {location.pathname === "/public-trips" && (
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full"></div>
+                )}
+              </Link>
+
+              {user ? (
+                <>
+                  {/* 4. Social Travel - Only when logged in */}
                   <Link
                     to="/social-travel"
                     className={`${textStyles.primary} ${textStyles.hover} font-semibold transition-all duration-300 px-4 py-2 rounded-lg relative ${
@@ -554,6 +552,21 @@ const Navbar = () => {
                       <span>Social Travel</span>
                     </div>
                     {location.pathname === "/social-travel" && (
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full"></div>
+                    )}
+                  </Link>
+
+                  {/* 5. Dashboard - Only when logged in */}
+                  <Link
+                    to="/dashboard"
+                    className={`${textStyles.primary} ${textStyles.hover} font-semibold transition-all duration-300 px-4 py-2 rounded-lg relative ${
+                      location.pathname === "/dashboard"
+                        ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20 shadow-sm`
+                        : "hover:bg-white/5 dark:hover:bg-gray-800/10"
+                    }`}
+                  >
+                    Dashboard
+                    {location.pathname === "/dashboard" && (
                       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full"></div>
                     )}
                   </Link>
@@ -667,16 +680,18 @@ const Navbar = () => {
             {/* Mobile Right Side */}
             <div className="md:hidden flex items-center space-x-2">
               {/* Connection Status for Mobile */}
-              <div
-                className={`flex items-center px-2 py-1 rounded-lg text-xs transition-all duration-300 ${
-                  isConnected
-                    ? "bg-green-500/20 text-green-400 border border-green-500/50"
-                    : "bg-red-500/20 text-red-400 border border-red-500/50"
-                }`}
-                title={isConnected ? "Connected" : "Disconnected"}
-              >
-                {isConnected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-              </div>
+              {user && (
+                <div
+                  className={`flex items-center px-2 py-1 rounded-lg text-xs transition-all duration-300 ${
+                    isConnected
+                      ? "bg-green-500/20 text-green-400 border border-green-500/50"
+                      : "bg-red-500/20 text-red-400 border border-red-500/50"
+                  }`}
+                  title={isConnected ? "Connected" : "Disconnected"}
+                >
+                  {isConnected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+                </div>
+              )}
 
               {/* User Avatar for Mobile */}
               {user && (
@@ -699,22 +714,24 @@ const Navbar = () => {
               )}
 
               {/* Notification Button for Mobile */}
-              <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className={`relative p-2 rounded-lg transition-all duration-300 ${
-                  theme === "light"
-                    ? "bg-white/80 border border-gray-200 text-gray-700 hover:bg-gray-50"
-                    : "bg-gray-800/80 border border-gray-600 text-gray-300 hover:bg-gray-700"
-                } backdrop-blur-sm shadow-sm`}
-                title="Notifications"
-              >
-                <Bell className="w-4 h-4" />
-                {unreadCount > 0 && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-xs text-white font-bold">{unreadCount > 9 ? "9+" : unreadCount}</span>
-                  </div>
-                )}
-              </button>
+              {user && (
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className={`relative p-2 rounded-lg transition-all duration-300 ${
+                    theme === "light"
+                      ? "bg-white/80 border border-gray-200 text-gray-700 hover:bg-gray-50"
+                      : "bg-gray-800/80 border border-gray-600 text-gray-300 hover:bg-gray-700"
+                  } backdrop-blur-sm shadow-sm`}
+                  title="Notifications"
+                >
+                  <Bell className="w-4 h-4" />
+                  {unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-xs text-white font-bold">{unreadCount > 9 ? "9+" : unreadCount}</span>
+                    </div>
+                  )}
+                </button>
+              )}
 
               {/* Hamburger Menu Button */}
               <button
@@ -731,7 +748,7 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Mobile Menu */}
+          {/* Mobile Menu - Reordered as requested */}
           <AnimatePresence>
             {showMobileMenu && (
               <motion.div
@@ -740,107 +757,128 @@ const Navbar = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="md:hidden border-t border-white/10 dark:border-gray-700/30 py-4 backdrop-blur-xl"
               >
-                {user ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3 px-4 py-2">
-                      {user?.avatar_url ? (
-                        <img
-                          src={user.avatar_url || "/placeholder.svg?height=40&width=40"}
-                          alt={user.name}
-                          className="w-10 h-10 rounded-full border-2 border-white/20 shadow-sm"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
-                          <User className="w-5 h-5 text-white" />
+                <div className="space-y-4">
+                  {/* 1. Plan Trip - Always visible */}
+                  <Link
+                    to="/trip-planner"
+                    className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300 ${
+                      location.pathname === "/trip-planner"
+                        ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20`
+                        : ""
+                    }`}
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    Plan Trip
+                  </Link>
+
+                  {user ? (
+                    <>
+                      <div className="flex items-center space-x-3 px-4 py-2">
+                        {user?.avatar_url ? (
+                          <img
+                            src={user.avatar_url || "/placeholder.svg?height=40&width=40"}
+                            alt={user.name}
+                            className="w-10 h-10 rounded-full border-2 border-white/20 shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                        )}
+                        <div>
+                          <p className={`font-semibold ${textStyles.primary}`}>{user?.name}</p>
+                          <p className={`text-sm ${textStyles.secondary} truncate`}>{user?.email}</p>
                         </div>
-                      )}
-                      <div>
-                        <p className={`font-semibold ${textStyles.primary}`}>{user?.name}</p>
-                        <p className={`text-sm ${textStyles.secondary} truncate`}>{user?.email}</p>
                       </div>
+
+                      {/* 2. My Trips - Only when logged in */}
+                      <Link
+                        to="/my-trips"
+                        className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300 ${
+                          location.pathname === "/my-trips"
+                            ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20`
+                            : ""
+                        }`}
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        My Trips
+                      </Link>
+                    </>
+                  ) : null}
+
+                  {/* 3. Public Trips - Always visible */}
+                  <Link
+                    to="/public-trips"
+                    className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300 ${
+                      location.pathname === "/public-trips"
+                        ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20`
+                        : ""
+                    }`}
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Globe className="w-4 h-4" />
+                      <span>Public Trips</span>
                     </div>
-                    <Link
-                      to="/dashboard"
-                      className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300 ${
-                        location.pathname === "/dashboard" ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20` : ""
-                      }`}
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      to="/trip-planner"
-                      className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300 ${
-                        location.pathname === "/trip-planner"
-                          ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20`
-                          : ""
-                      }`}
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      Plan Trip
-                    </Link>
-                    <Link
-                      to="/my-trips"
-                      className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300 ${
-                        location.pathname === "/my-trips" ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20` : ""
-                      }`}
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      My Trips
-                    </Link>
-                    <Link
-                      to="/public-trips"
-                      className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300 ${
-                        location.pathname === "/public-trips"
-                          ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20`
-                          : ""
-                      }`}
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <Globe className="w-4 h-4" />
-                        <span>Public Trips</span>
-                      </div>
-                    </Link>
-                    <Link
-                      to="/social-travel"
-                      className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300 ${
-                        location.pathname === "/social-travel"
-                          ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20`
-                          : ""
-                      }`}
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <Users className="w-4 h-4" />
-                        <span>Social Travel</span>
-                      </div>
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg mx-2 transition-all duration-300"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <Link
-                      to="/login"
-                      className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300`}
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      to="/register"
-                      className={`block px-4 py-3 ${textStyles.accent} hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg mx-2 transition-all duration-300`}
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      Sign Up
-                    </Link>
-                  </div>
-                )}
+                  </Link>
+
+                  {user ? (
+                    <>
+                      {/* 4. Social Travel - Only when logged in */}
+                      <Link
+                        to="/social-travel"
+                        className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300 ${
+                          location.pathname === "/social-travel"
+                            ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20`
+                            : ""
+                        }`}
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <Users className="w-4 h-4" />
+                          <span>Social Travel</span>
+                        </div>
+                      </Link>
+
+                      {/* 5. Dashboard - Only when logged in */}
+                      <Link
+                        to="/dashboard"
+                        className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300 ${
+                          location.pathname === "/dashboard"
+                            ? `${textStyles.accent} bg-white/10 dark:bg-gray-800/20`
+                            : ""
+                        }`}
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        Dashboard
+                      </Link>
+
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg mx-2 transition-all duration-300"
+                      >
+                        Sign Out
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        to="/login"
+                        className={`block px-4 py-3 ${textStyles.primary} hover:bg-white/10 dark:hover:bg-gray-800/20 rounded-lg mx-2 transition-all duration-300`}
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        to="/register"
+                        className={`block px-4 py-3 ${textStyles.accent} hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg mx-2 transition-all duration-300`}
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        Sign Up
+                      </Link>
+                    </>
+                  )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

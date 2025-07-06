@@ -9,26 +9,18 @@ import {
   Bell,
   Calendar,
   CheckCircle,
-  Cloud,
-  Database,
   DollarSign,
   Globe,
   Heart,
   MapPin,
-  MessageSquare,
   Moon,
   Navigation,
   Plane,
-  RefreshCw,
-  Route,
   Search,
   Settings,
-  Shield,
-  Sparkles,
   Sun,
   Target,
   TrendingUp,
-  Zap,
 } from "lucide-react"
 import { useAuth } from "../Context/AuthContext"
 import { API_BASE_URL } from "../Utils/Constants"
@@ -48,26 +40,26 @@ const Dashboard = () => {
   const [showSearchResults, setShowSearchResults] = useState(false)
   const canvasRef = useRef(null)
 
-  const [stats, setStats] = useState({
+  // Real calculated stats from actual trip data
+  const [realStats, setRealStats] = useState({
     totalTrips: 0,
     upcomingTrips: 0,
     completedTrips: 0,
-    totalProgress: 0,
-    favoriteTrips: 0,
+    activeTrips: 0,
     totalBudget: 0,
+    averageBudget: 0,
+    totalDays: 0,
+    averageDuration: 0,
     destinationsVisited: 0,
-    averageTripDuration: 0,
-    totalDistance: 0,
-    carbonFootprint: 0,
-  })
-
-  const [systemMetrics, setSystemMetrics] = useState({
-    planningEfficiency: 85,
-    budgetOptimization: 72,
-    routeOptimization: 91,
-    weatherAccuracy: 88,
-    aiRecommendations: 94,
-    userSatisfaction: 96,
+    favoriteTrips: 0,
+    completionRate: 0,
+    totalProgress: 0,
+    budgetUtilization: 0,
+    planningEfficiency: 0,
+    tripsWithPlans: 0,
+    budgetSpent: 0,
+    budgetRemaining: 0,
+    avgBudgetPerDay: 0,
   })
 
   // Update time
@@ -78,27 +70,10 @@ const Dashboard = () => {
     return () => clearInterval(interval)
   }, [])
 
-  // Simulate changing metrics
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSystemMetrics((prev) => ({
-        ...prev,
-        planningEfficiency: Math.floor(Math.random() * 15) + 80,
-        budgetOptimization: Math.floor(Math.random() * 20) + 70,
-        routeOptimization: Math.floor(Math.random() * 10) + 85,
-        weatherAccuracy: Math.floor(Math.random() * 12) + 82,
-        aiRecommendations: Math.floor(Math.random() * 8) + 90,
-        userSatisfaction: Math.floor(Math.random() * 6) + 94,
-      }))
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [])
-
   // Enhanced search functionality
   const handleSearch = (query) => {
     setSearchQuery(query)
     if (query.length > 1) {
-      // Enhanced search with more destinations and trips
       const destinations = [
         "Paris, France",
         "Tokyo, Japan",
@@ -137,7 +112,7 @@ const Dashboard = () => {
         ...tripTypes
           .filter((trip) => trip.toLowerCase().includes(query.toLowerCase()))
           .map((trip) => ({ type: "trip", name: trip, icon: Plane })),
-      ].slice(0, 6) // Limit to 6 results
+      ].slice(0, 6)
 
       setSearchResults(mockResults)
       setShowSearchResults(true)
@@ -146,10 +121,8 @@ const Dashboard = () => {
     }
   }
 
-  // Handle Enter key press for search
   const handleSearchKeyPress = (e) => {
     if (e.key === "Enter" && searchQuery.trim()) {
-      // Navigate based on search query
       if (searchQuery.toLowerCase().includes("trip") || searchQuery.toLowerCase().includes("plan")) {
         navigate("/trip-planner")
       } else {
@@ -160,11 +133,9 @@ const Dashboard = () => {
     }
   }
 
-  // Navigation handlers
   const handleNavigation = (path) => {
     switch (path) {
       case "dashboard":
-        // Already on dashboard
         break
       case "analytics":
         navigate("/my-trips")
@@ -173,11 +144,9 @@ const Dashboard = () => {
         navigate("/trip-planner")
         break
       case "weather":
-        // Navigate to weather page when implemented
         console.log("Weather page not implemented yet")
         break
       case "security":
-        // Navigate to security page when implemented
         console.log("Security page not implemented yet")
         break
       case "data":
@@ -187,7 +156,6 @@ const Dashboard = () => {
         navigate("/trip-planner")
         break
       case "settings":
-        // Navigate to settings when implemented
         console.log("Settings page not implemented yet")
         break
       default:
@@ -218,10 +186,8 @@ const Dashboard = () => {
         this.speedY = (Math.random() - 0.5) * (theme === "light" ? 0.2 : 0.3)
 
         if (theme === "light") {
-          // Light theme particles - vibrant travel themed colors
           this.color = `rgba(${Math.floor(Math.random() * 80) + 60}, ${Math.floor(Math.random() * 120) + 140}, ${Math.floor(Math.random() * 100) + 200}, ${Math.random() * 0.4 + 0.2})`
         } else {
-          // Dark theme particles - futuristic colors
           this.color = `rgba(${Math.floor(Math.random() * 100) + 100}, ${Math.floor(Math.random() * 100) + 150}, ${Math.floor(Math.random() * 55) + 200}, ${Math.random() * 0.4 + 0.1})`
         }
       }
@@ -292,41 +258,127 @@ const Dashboard = () => {
         const userTrips = data.trips || []
         setTrips(userTrips)
 
-        // Calculate advanced stats
+        // Calculate REAL stats from actual trip data
         const now = new Date()
         const totalTrips = userTrips.length
         const upcomingTrips = userTrips.filter((trip) => trip.start_date && new Date(trip.start_date) > now).length
         const completedTrips = userTrips.filter(
           (trip) => trip.status === "completed" || (trip.progress_stats && trip.progress_stats.percentage === 100),
         ).length
+        const activeTrips = userTrips.filter(
+          (trip) =>
+            trip.status === "active" ||
+            (trip.progress_stats && trip.progress_stats.percentage > 0 && trip.progress_stats.percentage < 100),
+        ).length
         const favoriteTrips = userTrips.filter((trip) => trip.is_favorite).length
         const totalBudget = userTrips.reduce((sum, trip) => sum + (Number(trip.budget) || 0), 0)
-        const totalProgress =
-          userTrips.length > 0
-            ? Math.round(
-                userTrips.reduce((sum, trip) => sum + (trip.progress_stats?.percentage || 0), 0) / userTrips.length,
-              )
-            : 0
-
+        const averageBudget = totalTrips > 0 ? Math.round(totalBudget / totalTrips) : 0
+        const totalDays = userTrips.reduce((sum, trip) => sum + (trip.days || 0), 0)
+        const averageDuration = totalTrips > 0 ? Math.round(totalDays / totalTrips) : 0
         const destinationsVisited = new Set(userTrips.map((trip) => trip.destination)).size
-        const averageTripDuration =
-          userTrips.length > 0
-            ? Math.round(userTrips.reduce((sum, trip) => sum + (trip.days || 0), 0) / userTrips.length)
-            : 0
-        const totalDistance = userTrips.reduce((sum, trip) => sum + (Math.random() * 2000 + 500), 0) // Simulated
-        const carbonFootprint = Math.round(totalDistance * 0.21) // Simulated calculation
 
-        setStats({
+        // Calculate real completion rate
+        const completionRate = totalTrips > 0 ? Math.round((completedTrips / totalTrips) * 100) : 0
+
+        // Calculate average progress across all trips
+        const totalProgress =
+          totalTrips > 0
+            ? Math.round(userTrips.reduce((sum, trip) => sum + (trip.progress_stats?.percentage || 0), 0) / totalTrips)
+            : 0
+
+        // FIXED: Calculate planning efficiency properly
+        let tripsWithPlans = 0
+        userTrips.forEach((trip) => {
+          // Check if trip has a detailed plan
+          let hasDetailedPlan = false
+
+          // Check trip_plan field
+          if (trip.trip_plan) {
+            try {
+              const tripPlan = typeof trip.trip_plan === "string" ? JSON.parse(trip.trip_plan) : trip.trip_plan
+              if (tripPlan) {
+                // Check for various plan structures
+                if (tripPlan.days && Array.isArray(tripPlan.days) && tripPlan.days.length > 0) {
+                  hasDetailedPlan = true
+                } else if (
+                  tripPlan.dailyItinerary &&
+                  Array.isArray(tripPlan.dailyItinerary) &&
+                  tripPlan.dailyItinerary.length > 0
+                ) {
+                  hasDetailedPlan = true
+                } else if (tripPlan.itinerary && Array.isArray(tripPlan.itinerary) && tripPlan.itinerary.length > 0) {
+                  hasDetailedPlan = true
+                } else if (tripPlan.schedule && Array.isArray(tripPlan.schedule) && tripPlan.schedule.length > 0) {
+                  hasDetailedPlan = true
+                }
+              }
+            } catch (e) {
+              console.log("Error parsing trip plan:", e)
+            }
+          }
+
+          // Also check if trip has hotels, flights, or other detailed info
+          if (!hasDetailedPlan) {
+            if (
+              (trip.hotels && trip.hotels.length > 0) ||
+              (trip.flights && trip.flights.length > 0) ||
+              (trip.activities && trip.activities.length > 0)
+            ) {
+              hasDetailedPlan = true
+            }
+          }
+
+          if (hasDetailedPlan) {
+            tripsWithPlans++
+          }
+        })
+
+        const planningEfficiency = totalTrips > 0 ? Math.round((tripsWithPlans / totalTrips) * 100) : 0
+
+        // ENHANCED: Better budget calculations
+        const completedTripsBudget = userTrips
+          .filter(
+            (trip) => trip.status === "completed" || (trip.progress_stats && trip.progress_stats.percentage === 100),
+          )
+          .reduce((sum, trip) => sum + (Number(trip.budget) || 0), 0)
+
+        const activeTripsBudget = userTrips
+          .filter(
+            (trip) =>
+              trip.status === "active" ||
+              (trip.progress_stats && trip.progress_stats.percentage > 0 && trip.progress_stats.percentage < 100),
+          )
+          .reduce((sum, trip) => sum + (Number(trip.budget) || 0), 0)
+
+        // Calculate budget spent (completed trips) vs remaining (upcoming/active)
+        const budgetSpent = completedTripsBudget
+        const budgetRemaining = totalBudget - budgetSpent
+
+        // Calculate budget utilization as percentage of total budget that's been spent
+        const budgetUtilization = totalBudget > 0 ? Math.round((budgetSpent / totalBudget) * 100) : 0
+
+        // Calculate average budget per day
+        const avgBudgetPerDay = totalDays > 0 ? Math.round(totalBudget / totalDays) : 0
+
+        setRealStats({
           totalTrips,
           upcomingTrips,
           completedTrips,
-          totalProgress,
-          favoriteTrips,
+          activeTrips,
           totalBudget,
+          averageBudget,
+          totalDays,
+          averageDuration,
           destinationsVisited,
-          averageTripDuration,
-          totalDistance: Math.round(totalDistance),
-          carbonFootprint,
+          favoriteTrips,
+          completionRate,
+          totalProgress,
+          budgetUtilization,
+          planningEfficiency,
+          tripsWithPlans,
+          budgetSpent,
+          budgetRemaining,
+          avgBudgetPerDay,
         })
       } catch (err) {
         console.error("Error fetching trips for dashboard:", err)
@@ -596,35 +648,21 @@ const Dashboard = () => {
                   theme={theme}
                   onClick={() => handleNavigation("analytics")}
                 />
-                <NavItem icon={Route} label="Route Optimizer" theme={theme} onClick={() => handleNavigation("route")} />
-                <NavItem icon={Cloud} label="Weather Intel" theme={theme} onClick={() => handleNavigation("weather")} />
-                <NavItem
-                  icon={Shield}
-                  label="Travel Security"
-                  theme={theme}
-                  onClick={() => handleNavigation("security")}
-                />
-                <NavItem icon={Database} label="Data Vault" theme={theme} onClick={() => handleNavigation("data")} />
-                <NavItem
-                  icon={MessageSquare}
-                  label="AI Assistant"
-                  theme={theme}
-                  onClick={() => handleNavigation("ai")}
-                />
+                <NavItem icon={Navigation} label="Plan Trip" theme={theme} onClick={() => handleNavigation("route")} />
                 <NavItem icon={Settings} label="Settings" theme={theme} onClick={() => handleNavigation("settings")} />
               </nav>
 
               <div className={`mt-8 pt-6 border-t ${themeClasses.border}`}>
-                <div className={`text-sm ${themeClasses.secondaryText} mb-4 font-semibold`}>SYSTEM STATUS</div>
+                <div className={`text-sm ${themeClasses.secondaryText} mb-4 font-semibold`}>TRIP STATISTICS</div>
                 <div className="space-y-4">
-                  <StatusItem label="AI Engine" value={systemMetrics.aiRecommendations} color="cyan" theme={theme} />
+                  <StatusItem label="Completion Rate" value={realStats.completionRate} color="green" theme={theme} />
                   <StatusItem
-                    label="Route Optimizer"
-                    value={systemMetrics.routeOptimization}
-                    color="green"
+                    label="Planning Progress"
+                    value={realStats.planningEfficiency}
+                    color="blue"
                     theme={theme}
                   />
-                  <StatusItem label="Budget AI" value={systemMetrics.budgetOptimization} color="purple" theme={theme} />
+                  <StatusItem label="Budget Usage" value={realStats.budgetUtilization} color="purple" theme={theme} />
                 </div>
               </div>
             </div>
@@ -633,18 +671,16 @@ const Dashboard = () => {
           {/* Main Content */}
           <div className="col-span-12 md:col-span-9 lg:col-span-7">
             <div className="grid gap-6">
-              {/* Travel Intelligence Overview */}
+              {/* Real Travel Statistics Overview */}
               <div className={`${themeClasses.card} rounded-2xl overflow-hidden`}>
                 <div className={`border-b ${themeClasses.border} p-6`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <Activity className={`mr-4 h-7 w-7 ${themeClasses.accentText}`} />
                       <div>
-                        <h2 className={`text-2xl font-bold ${themeClasses.primaryText}`}>
-                          Travel Intelligence Dashboard
-                        </h2>
+                        <h2 className={`text-2xl font-bold ${themeClasses.primaryText}`}>Your Travel Statistics</h2>
                         <p className={`text-base ${themeClasses.secondaryText} mt-1`}>
-                          Real-time travel analytics and optimization
+                          Real data from your actual trips
                         </p>
                       </div>
                     </div>
@@ -659,75 +695,67 @@ const Dashboard = () => {
                         <div
                           className={`h-2 w-2 rounded-full ${theme === "light" ? "bg-blue-600" : "bg-cyan-400"} mr-2 animate-pulse inline-block`}
                         ></div>
-                        LIVE
+                        LIVE DATA
                       </div>
-                      <button
-                        className={`p-2 ${themeClasses.secondaryText} hover:${themeClasses.accentText} transition-colors`}
-                      >
-                        <RefreshCw className="h-5 w-5" />
-                      </button>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <MetricCard
-                      title="Planning Efficiency"
-                      value={systemMetrics.planningEfficiency}
-                      icon={Target}
-                      trend="up"
-                      color="cyan"
-                      detail="AI-powered optimization"
-                      theme={theme}
-                    />
-                    <MetricCard
-                      title="Budget Optimization"
-                      value={systemMetrics.budgetOptimization}
-                      icon={DollarSign}
-                      trend="stable"
+                    <RealMetricCard
+                      title="Trip Completion"
+                      value={realStats.completionRate}
+                      icon={CheckCircle}
                       color="green"
-                      detail="Smart cost analysis"
+                      detail={`${realStats.completedTrips} of ${realStats.totalTrips} trips completed`}
                       theme={theme}
                     />
-                    <MetricCard
-                      title="Route Intelligence"
-                      value={systemMetrics.routeOptimization}
-                      icon={Navigation}
-                      trend="up"
+                    <RealMetricCard
+                      title="Planning Efficiency"
+                      value={realStats.planningEfficiency}
+                      icon={Target}
+                      color="blue"
+                      detail={`${realStats.tripsWithPlans} trips with detailed plans`}
+                      theme={theme}
+                    />
+                    <RealMetricCard
+                      title="Average Progress"
+                      value={realStats.totalProgress}
+                      icon={TrendingUp}
                       color="purple"
-                      detail="Quantum pathfinding"
+                      detail={`Across all your trips`}
                       theme={theme}
                     />
                   </div>
 
-                  {/* Travel Stats Grid */}
+                  {/* Real Travel Stats Grid */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <StatCard
                       icon={Globe}
-                      label="Total Adventures"
-                      value={stats.totalTrips}
+                      label="Total Trips"
+                      value={realStats.totalTrips}
                       color="from-cyan-500 to-blue-500"
                       theme={theme}
                     />
                     <StatCard
                       icon={Calendar}
                       label="Upcoming Trips"
-                      value={stats.upcomingTrips}
+                      value={realStats.upcomingTrips}
                       color="from-purple-500 to-pink-500"
                       theme={theme}
                     />
                     <StatCard
                       icon={CheckCircle}
-                      label="Completed Journeys"
-                      value={stats.completedTrips}
+                      label="Completed"
+                      value={realStats.completedTrips}
                       color="from-green-500 to-emerald-500"
                       theme={theme}
                     />
                     <StatCard
                       icon={Heart}
-                      label="Favorite Destinations"
-                      value={stats.favoriteTrips}
+                      label="Favorites"
+                      value={realStats.favoriteTrips}
                       color="from-red-500 to-pink-500"
                       theme={theme}
                     />
@@ -735,43 +763,43 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Advanced Analytics */}
+              {/* Real Analytics */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className={`${themeClasses.card} rounded-2xl p-6`}>
                   <div className="flex items-center mb-6">
                     <BarChart3 className={`mr-3 h-6 w-6 ${theme === "light" ? "text-blue-600" : "text-blue-400"}`} />
-                    <h3 className={`text-xl font-bold ${themeClasses.primaryText}`}>Travel Analytics</h3>
+                    <h3 className={`text-xl font-bold ${themeClasses.primaryText}`}>Trip Analytics</h3>
                   </div>
                   <div className="space-y-5">
                     <AnalyticsItem
-                      label="Destinations Explored"
-                      value={stats.destinationsVisited}
-                      total={50}
+                      label="Destinations Visited"
+                      value={realStats.destinationsVisited}
+                      total={20}
                       color="blue"
                       theme={theme}
                     />
                     <AnalyticsItem
                       label="Average Trip Duration"
-                      value={stats.averageTripDuration}
+                      value={realStats.averageDuration}
                       total={14}
                       color="purple"
-                      unit="days"
+                      unit=" days"
                       theme={theme}
                     />
                     <AnalyticsItem
-                      label="Total Distance Traveled"
-                      value={Math.round(stats.totalDistance / 1000)}
-                      total={100}
+                      label="Total Travel Days"
+                      value={realStats.totalDays}
+                      total={365}
                       color="cyan"
-                      unit="K km"
+                      unit=" days"
                       theme={theme}
                     />
                     <AnalyticsItem
-                      label="Carbon Footprint"
-                      value={stats.carbonFootprint}
-                      total={5000}
+                      label="Budget per Day"
+                      value={Math.round(realStats.avgBudgetPerDay / 1000)}
+                      total={10}
                       color="green"
-                      unit="kg CO₂"
+                      unit="K ₹"
                       theme={theme}
                     />
                   </div>
@@ -779,34 +807,64 @@ const Dashboard = () => {
 
                 <div className={`${themeClasses.card} rounded-2xl p-6`}>
                   <div className="flex items-center mb-6">
-                    <Sparkles className={`mr-3 h-6 w-6 ${theme === "light" ? "text-purple-600" : "text-purple-400"}`} />
-                    <h3 className={`text-xl font-bold ${themeClasses.primaryText}`}>AI Insights</h3>
+                    <DollarSign className={`mr-3 h-6 w-6 ${theme === "light" ? "text-green-600" : "text-green-400"}`} />
+                    <h3 className={`text-xl font-bold ${themeClasses.primaryText}`}>Budget Overview</h3>
                   </div>
                   <div className="space-y-4">
-                    <InsightCard
-                      title="Optimal Travel Season"
-                      description="March-May shows 23% better weather conditions for your preferred destinations"
-                      type="recommendation"
-                      theme={theme}
-                    />
-                    <InsightCard
-                      title="Budget Optimization"
-                      description="Booking 45 days in advance can save up to ₹15,000 on average"
-                      type="savings"
-                      theme={theme}
-                    />
-                    <InsightCard
-                      title="Route Efficiency"
-                      description="Multi-city trips reduce travel time by 18% with smart routing"
-                      type="efficiency"
-                      theme={theme}
-                    />
-                    <InsightCard
-                      title="Trending Destination"
-                      description="Santorini is 34% more popular this season - book early!"
-                      type="trending"
-                      theme={theme}
-                    />
+                    <div className={`${themeClasses.cardContent} rounded-xl p-4`}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className={`text-sm ${themeClasses.secondaryText}`}>Total Budget</span>
+                        <span className={`text-lg font-bold ${theme === "light" ? "text-blue-600" : "text-blue-400"}`}>
+                          ₹{realStats.totalBudget.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className={`text-xs ${themeClasses.secondaryText}`}>Across {realStats.totalTrips} trips</div>
+                    </div>
+
+                    <div className={`${themeClasses.cardContent} rounded-xl p-4`}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className={`text-sm ${themeClasses.secondaryText}`}>Budget Spent</span>
+                        <span
+                          className={`text-lg font-bold ${theme === "light" ? "text-green-600" : "text-green-400"}`}
+                        >
+                          ₹{realStats.budgetSpent.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className={`text-xs ${themeClasses.secondaryText}`}>
+                        From {realStats.completedTrips} completed trips
+                      </div>
+                    </div>
+
+                    <div className={`${themeClasses.cardContent} rounded-xl p-4`}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className={`text-sm ${themeClasses.secondaryText}`}>Budget Remaining</span>
+                        <span
+                          className={`text-lg font-bold ${theme === "light" ? "text-purple-600" : "text-purple-400"}`}
+                        >
+                          ₹{realStats.budgetRemaining.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className={`text-xs ${themeClasses.secondaryText}`}>For upcoming & active trips</div>
+                    </div>
+
+                    <div className={`${themeClasses.cardContent} rounded-xl p-4`}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className={`text-sm ${themeClasses.secondaryText}`}>Budget Utilization</span>
+                        <span
+                          className={`text-lg font-bold ${theme === "light" ? "text-orange-600" : "text-orange-400"}`}
+                        >
+                          {realStats.budgetUtilization}%
+                        </span>
+                      </div>
+                      <div
+                        className={`w-full ${theme === "light" ? "bg-gray-200" : "bg-slate-700"} rounded-full h-2 mt-2`}
+                      >
+                        <div
+                          className={`${theme === "light" ? "bg-gradient-to-r from-orange-500 to-red-500" : "bg-gradient-to-r from-orange-500 to-red-500"} h-2 rounded-full transition-all duration-300`}
+                          style={{ width: `${realStats.budgetUtilization}%` }}
+                        ></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -974,14 +1032,16 @@ const Dashboard = () => {
                 <div className="p-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div className={`${themeClasses.cardContent} rounded-lg p-3 border ${themeClasses.border}`}>
-                      <div className={`text-sm ${themeClasses.secondaryText} mb-1 font-medium`}>Active Since</div>
+                      <div className={`text-sm ${themeClasses.secondaryText} mb-1 font-medium`}>Total Trips</div>
                       <div className={`text-base font-mono ${themeClasses.primaryText} font-semibold`}>
-                        14d 06:42:18
+                        {realStats.totalTrips}
                       </div>
                     </div>
                     <div className={`${themeClasses.cardContent} rounded-lg p-3 border ${themeClasses.border}`}>
-                      <div className={`text-sm ${themeClasses.secondaryText} mb-1 font-medium`}>Time Zone</div>
-                      <div className={`text-base font-mono ${themeClasses.primaryText} font-semibold`}>UTC+05:30</div>
+                      <div className={`text-sm ${themeClasses.secondaryText} mb-1 font-medium`}>Active</div>
+                      <div className={`text-base font-mono ${themeClasses.primaryText} font-semibold`}>
+                        {realStats.activeTrips}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -991,8 +1051,8 @@ const Dashboard = () => {
               <div className={`${themeClasses.card} rounded-2xl p-6`}>
                 <h3 className={`text-xl font-bold ${themeClasses.primaryText} mb-5`}>Quick Actions</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <ActionButton icon={Sparkles} label="AI Planner" onClick={handlePlanTrip} theme={theme} />
-                  <ActionButton icon={MapPin} label="Explore" onClick={() => navigate("/my-trips")} theme={theme} />
+                  <ActionButton icon={Plane} label="Plan Trip" onClick={handlePlanTrip} theme={theme} />
+                  <ActionButton icon={MapPin} label="My Trips" onClick={() => navigate("/my-trips")} theme={theme} />
                   <ActionButton
                     icon={BarChart3}
                     label="Analytics"
@@ -1008,56 +1068,28 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Travel Intelligence */}
+              {/* Trip Summary */}
               <div className={`${themeClasses.card} rounded-2xl p-6`}>
-                <h3 className={`text-xl font-bold ${themeClasses.primaryText} mb-5`}>Travel Intelligence</h3>
-                <div className="space-y-5">
-                  <IntelligenceMetric
-                    label="Weather Prediction"
-                    value={systemMetrics.weatherAccuracy}
-                    color="blue"
-                    theme={theme}
-                  />
-                  <IntelligenceMetric
-                    label="AI Recommendations"
-                    value={systemMetrics.aiRecommendations}
-                    color="purple"
-                    theme={theme}
-                  />
-                  <IntelligenceMetric
-                    label="User Satisfaction"
-                    value={systemMetrics.userSatisfaction}
-                    color="green"
-                    theme={theme}
-                  />
-                </div>
-              </div>
-
-              {/* Travel Alerts */}
-              <div className={`${themeClasses.card} rounded-2xl p-6`}>
-                <h3 className={`text-xl font-bold ${themeClasses.primaryText} mb-5`}>Travel Alerts</h3>
+                <h3 className={`text-xl font-bold ${themeClasses.primaryText} mb-5`}>Trip Summary</h3>
                 <div className="space-y-4">
-                  <AlertItem
-                    title="Weather Update"
-                    time="14:32"
-                    description="Clear skies predicted for your Tokyo trip"
-                    type="info"
-                    theme={theme}
-                  />
-                  <AlertItem
-                    title="Price Drop Alert"
-                    time="13:45"
-                    description="Flight to Paris dropped by ₹8,500"
-                    type="success"
-                    theme={theme}
-                  />
-                  <AlertItem
-                    title="Booking Reminder"
-                    time="09:12"
-                    description="Hotel booking expires in 2 days"
-                    type="warning"
-                    theme={theme}
-                  />
+                  <div className="flex justify-between items-center">
+                    <span className={`${themeClasses.secondaryText}`}>Destinations</span>
+                    <span className={`font-bold ${themeClasses.primaryText}`}>{realStats.destinationsVisited}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={`${themeClasses.secondaryText}`}>Total Days</span>
+                    <span className={`font-bold ${themeClasses.primaryText}`}>{realStats.totalDays}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={`${themeClasses.secondaryText}`}>Avg Duration</span>
+                    <span className={`font-bold ${themeClasses.primaryText}`}>{realStats.averageDuration} days</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={`${themeClasses.secondaryText}`}>Completion</span>
+                    <span className={`font-bold ${theme === "light" ? "text-green-600" : "text-green-400"}`}>
+                      {realStats.completionRate}%
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1084,7 +1116,7 @@ const Dashboard = () => {
   )
 }
 
-// Component definitions with theme support and larger fonts
+// Component definitions with theme support and real data
 function NavItem({ icon: Icon, label, active, theme, onClick }) {
   return (
     <button
@@ -1109,7 +1141,7 @@ function StatusItem({ label, value, color, theme }) {
   const getColor = () => {
     if (theme === "light") {
       switch (color) {
-        case "cyan":
+        case "blue":
           return "from-blue-400 to-blue-600"
         case "green":
           return "from-emerald-400 to-green-600"
@@ -1120,7 +1152,7 @@ function StatusItem({ label, value, color, theme }) {
       }
     } else {
       switch (color) {
-        case "cyan":
+        case "blue":
           return "from-cyan-500 to-blue-500"
         case "green":
           return "from-green-500 to-emerald-500"
@@ -1147,11 +1179,11 @@ function StatusItem({ label, value, color, theme }) {
   )
 }
 
-function MetricCard({ title, value, icon: Icon, trend, color, detail, theme }) {
+function RealMetricCard({ title, value, icon: Icon, color, detail, theme }) {
   const getColor = () => {
     if (theme === "light") {
       switch (color) {
-        case "cyan":
+        case "blue":
           return "from-blue-400 to-blue-600 border-blue-200"
         case "green":
           return "from-emerald-400 to-green-600 border-emerald-200"
@@ -1162,7 +1194,7 @@ function MetricCard({ title, value, icon: Icon, trend, color, detail, theme }) {
       }
     } else {
       switch (color) {
-        case "cyan":
+        case "blue":
           return "from-cyan-500 to-blue-500 border-cyan-500/30"
         case "green":
           return "from-green-500 to-emerald-500 border-green-500/30"
@@ -1188,9 +1220,6 @@ function MetricCard({ title, value, icon: Icon, trend, color, detail, theme }) {
         {value}%
       </div>
       <div className={`text-sm ${theme === "light" ? "text-gray-500" : "text-slate-500"} font-medium`}>{detail}</div>
-      <div
-        className={`absolute -bottom-6 -right-6 h-16 w-16 rounded-full bg-gradient-to-r opacity-${theme === "light" ? "15" : "20"} blur-xl ${theme === "light" ? "from-blue-400 to-purple-400" : "from-cyan-500 to-blue-500"}`}
-      ></div>
     </div>
   )
 }
@@ -1234,56 +1263,6 @@ function AnalyticsItem({ label, value, total, color, unit = "", theme }) {
   )
 }
 
-function InsightCard({ title, description, type, theme }) {
-  const getTypeStyles = () => {
-    if (theme === "light") {
-      switch (type) {
-        case "recommendation":
-          return { icon: Target, color: "text-blue-600 bg-blue-100" }
-        case "savings":
-          return { icon: DollarSign, color: "text-emerald-600 bg-emerald-100" }
-        case "efficiency":
-          return { icon: Zap, color: "text-purple-600 bg-purple-100" }
-        case "trending":
-          return { icon: TrendingUp, color: "text-orange-600 bg-orange-100" }
-        default:
-          return { icon: Target, color: "text-blue-600 bg-blue-100" }
-      }
-    } else {
-      switch (type) {
-        case "recommendation":
-          return { icon: Target, color: "text-cyan-400 bg-cyan-500/10" }
-        case "savings":
-          return { icon: DollarSign, color: "text-green-400 bg-green-500/10" }
-        case "efficiency":
-          return { icon: Zap, color: "text-purple-400 bg-purple-500/10" }
-        case "trending":
-          return { icon: TrendingUp, color: "text-orange-400 bg-orange-500/10" }
-        default:
-          return { icon: Target, color: "text-cyan-400 bg-cyan-500/10" }
-      }
-    }
-  }
-
-  const { icon: Icon, color } = getTypeStyles()
-
-  return (
-    <div
-      className={`flex items-start space-x-3 p-4 ${theme === "light" ? "bg-gray-50/80 border-gray-200/50" : "bg-slate-800/30 border-slate-700/30"} rounded-lg border`}
-    >
-      <div className={`mt-0.5 p-2 rounded-full ${color}`}>
-        <Icon className="h-4 w-4" />
-      </div>
-      <div>
-        <div className={`text-base font-semibold ${theme === "light" ? "text-gray-800" : "text-slate-200"} mb-1`}>
-          {title}
-        </div>
-        <div className={`text-sm ${theme === "light" ? "text-gray-600" : "text-slate-400"}`}>{description}</div>
-      </div>
-    </div>
-  )
-}
-
 function ActionButton({ icon: Icon, label, onClick, theme }) {
   return (
     <button
@@ -1297,70 +1276,6 @@ function ActionButton({ icon: Icon, label, onClick, theme }) {
       <Icon className={`h-6 w-6 ${theme === "light" ? "text-blue-600" : "text-cyan-400"}`} />
       <span className={`text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-slate-300"}`}>{label}</span>
     </button>
-  )
-}
-
-function IntelligenceMetric({ label, value, color, theme }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <div className={`text-base ${theme === "light" ? "text-gray-600" : "text-slate-400"} font-medium`}>{label}</div>
-        <div className={`text-base font-semibold ${theme === "light" ? `text-${color}-600` : `text-${color}-400`}`}>
-          {value}%
-        </div>
-      </div>
-      <div className={`h-2 ${theme === "light" ? "bg-gray-200" : "bg-slate-800"} rounded-full overflow-hidden`}>
-        <div
-          className={`h-full bg-gradient-to-r from-${color}-500 to-${color}-400 rounded-full transition-all duration-300`}
-          style={{ width: `${value}%` }}
-        ></div>
-      </div>
-    </div>
-  )
-}
-
-function AlertItem({ title, time, description, type, theme }) {
-  const getTypeStyles = () => {
-    if (theme === "light") {
-      switch (type) {
-        case "info":
-          return { color: "text-blue-600 bg-blue-100" }
-        case "warning":
-          return { color: "text-amber-600 bg-amber-100" }
-        case "success":
-          return { color: "text-emerald-600 bg-emerald-100" }
-        default:
-          return { color: "text-blue-600 bg-blue-100" }
-      }
-    } else {
-      switch (type) {
-        case "info":
-          return { color: "text-blue-400 bg-blue-500/10" }
-        case "warning":
-          return { color: "text-amber-400 bg-amber-500/10" }
-        case "success":
-          return { color: "text-green-400 bg-green-500/10" }
-        default:
-          return { color: "text-blue-400 bg-blue-500/10" }
-      }
-    }
-  }
-
-  const { color } = getTypeStyles()
-
-  return (
-    <div className="flex items-start space-x-3">
-      <div className={`mt-1 w-2.5 h-2.5 rounded-full ${color.split(" ")[1]}`}></div>
-      <div>
-        <div className="flex items-center">
-          <div className={`text-base font-semibold ${theme === "light" ? "text-gray-800" : "text-slate-200"}`}>
-            {title}
-          </div>
-          <div className={`ml-2 text-sm ${theme === "light" ? "text-gray-500" : "text-slate-500"}`}>{time}</div>
-        </div>
-        <div className={`text-sm ${theme === "light" ? "text-gray-600" : "text-slate-400"} mt-1`}>{description}</div>
-      </div>
-    </div>
   )
 }
 

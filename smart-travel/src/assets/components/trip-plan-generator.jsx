@@ -645,53 +645,46 @@ export default function TripPlanGeneration({ tripData, updateTripData, onNext, o
     return premiumAmenities.sort(() => 0.5 - Math.random()).slice(0, numAmenities)
   }
 
-  const handleActivityViewDetails = async (activity) => {
-    try {
-      let searchQuery = `${activity.activity} ${activity.location} ${tripData.destination}`
-      if (
-        activity.activity.toLowerCase().includes("breakfast") ||
-        activity.activity.toLowerCase().includes("lunch") ||
-        activity.activity.toLowerCase().includes("dinner")
-      ) {
-        searchQuery = `${activity.location} ${tripData.destination}`
-      }
-
-      const placeResult = await placesapi.searchPlace(searchQuery)
-
-      if (placeResult && placeResult.location) {
-        placesapi.openInGoMaps(searchQuery, placeResult.location.lat, placeResult.location.lng)
-      } else {
-        const query = encodeURIComponent(`${activity.activity} ${tripData.destination}`)
-        const goMapsUrl = `https://go.maps.pro/search/${query}`
-        window.open(goMapsUrl, "_blank", "noopener,noreferrer")
-      }
-    } catch (error) {
-      console.error("Error finding activity location:", error)
-      const query = encodeURIComponent(`${activity.activity} ${tripData.destination}`)
-      const goMapsUrl = `https://go.maps.pro/search/${query}`
-      window.open(goMapsUrl, "_blank", "noopener,noreferrer")
+const handleActivityViewDetails = async (activity) => {
+  try {
+    let searchQuery = `${activity.activity} ${activity.location} ${tripData.destination}`;
+    if (
+      activity.activity.toLowerCase().includes("breakfast") ||
+      activity.activity.toLowerCase().includes("lunch") ||
+      activity.activity.toLowerCase().includes("dinner")
+    ) {
+      searchQuery = `${activity.location} ${tripData.destination}`;
     }
-  }
 
-  const handleHotelClick = async (hotel) => {
-    try {
-      const searchQuery = `${hotel.name} ${tripData.destination}`
-      const placeResult = await placesapi.searchPlace(searchQuery)
+    const placeResult = await placesapi.searchPlace(searchQuery);
 
-      if (placeResult && placeResult.location) {
-        placesapi.openInGoMaps(searchQuery, placeResult.location.lat, placeResult.location.lng)
-      } else {
-        const query = encodeURIComponent(`${hotel.name} ${tripData.destination}`)
-        const goMapsUrl = `https://go.maps.pro/search/${query}`
-        window.open(goMapsUrl, "_blank", "noopener,noreferrer")
-      }
-    } catch (error) {
-      console.error("Error finding hotel location:", error)
-      const query = encodeURIComponent(`${hotel.name} ${tripData.destination}`)
-      const goMapsUrl = `https://go.maps.pro/search/${query}`
-      window.open(goMapsUrl, "_blank", "noopener,noreferrer")
-    }
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
+    window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
+
+  } catch (error) {
+    console.error("Error finding activity location:", error);
+    const query = encodeURIComponent(`${activity.activity} ${tripData.destination}`);
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
   }
+}
+
+const handleHotelClick = async (hotel) => {
+  try {
+    const searchQuery = `${hotel.name} ${tripData.destination}`;
+    const placeResult = await placesapi.searchPlace(searchQuery);
+
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
+    window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
+
+  } catch (error) {
+    console.error("Error finding hotel location:", error);
+    const query = encodeURIComponent(`${hotel.name} ${tripData.destination}`);
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
+  }
+}
+
 
   const getActivityIcon = (type) => {
     const icons = {
