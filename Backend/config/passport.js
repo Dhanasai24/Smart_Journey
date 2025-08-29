@@ -2,7 +2,12 @@ import passport from "passport"
 import { Strategy as GoogleStrategy } from "passport-google-oauth20"
 import { Strategy as LocalStrategy } from "passport-local"
 import bcrypt from "bcryptjs"
-import pool from "./database"
+import pool from "./database.js"
+
+// ✅ UPDATED: Use environment variables for URLs
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000"
+
+console.log("🔗 Passport callback URL:", `${BACKEND_URL}/auth/google/ProjectforGoogleOauth`)
 
 // Google Strategy
 passport.use(
@@ -10,7 +15,8 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/auth/google/ProjectforGoogleOauth",
+      // ✅ UPDATED: Use environment variable for callback URL
+      callbackURL: `${BACKEND_URL}/auth/google/ProjectforGoogleOauth`,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
