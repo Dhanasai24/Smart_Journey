@@ -4,15 +4,17 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 class SmartAIService {
   constructor() {
     // Gemini API Key
-    this.geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    this.geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY2;
     this.geminiClient = new GoogleGenerativeAI(this.geminiApiKey);
 
     // Gemini models in priority order
     this.geminiModels = [
+     "gemini-2.5-flash",
       "gemini-2.0-flash-lite",
       "gemini-2.0-flash",
-      "gemini-2.5-flash",
-      "gemini-2.5-pro"
+      
+       "gemini-2.5-pro"
+      
     ];
 
     // DeepSeek API Keys
